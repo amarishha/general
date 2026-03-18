@@ -14,5 +14,5 @@ jobs:
       - name: Run setup script
         # This simulates a 'yes' to any prompts and runs your script
         run: |
-          chmod +x setup.sh
-          yes | sudo ./setup.sh
+          chmod +x sshare.sh
+          yes | sudo ./sshare.sh
