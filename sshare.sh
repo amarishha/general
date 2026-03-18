@@ -1,35 +1,35 @@
 #!/bin/bash
+
+# Exit immediately if a command fails
 set -e
 
-echo "--- Updating System ---"
+echo "--- 1. Updating System ---"
 sudo apt update && sudo apt upgrade -y
 
-echo "--- Installing SSH ---"
+echo "--- 2. Installing and Configuring SSH ---"
 sudo apt install openssh-server -y
 sudo systemctl enable --now ssh
+sudo systemctl status ssh --no-pager
 
-echo "--- Configuring Firewall ---"
-sudo ufw allow ssh
-sudo ufw allow 22/tcp
-sudo ufw allow 8000
-
-# Try to allow Samba using the profile (Capital S)
-# If that fails, it manually opens the Samba ports
-sudo ufw allow Samba || {
-    echo "Samba profile not found, opening ports manually..."
-    sudo ufw allow 137,138/udp
-    sudo ufw allow 139,445/tcp
-}
-
-echo "y" | sudo ufw enable
-
-echo "--- Installing Samba and Sharing Tools ---"
-sudo apt install nautilus-share samba -y
-sudo usermod -aG sambashare $USER
+echo "--- 3. Installing Samba and Nautilus Share ---"
+sudo apt install samba nautilus-share -y
+# $(whoami) will use the username of the person running the script
+sudo usermod -aG sambashare $(whoami)
 sudo systemctl restart smbd
 
-echo "------------------------------------------------"
-echo "DONE! Please run this to set your password:"
-echo "sudo smbpasswd -a $USER"
-echo "Then REBOOT your computer."
-echo "------------------------------------------------"
+echo "--- 4. Configuring Firewall (UFW) ---"
+sudo ufw allow ssh
+sudo ufw allow 22/tcp
+sudo ufw allow samba
+sudo ufw allow 8000
+# The --force flag skips the "are you sure?" prompt when enabling UFW
+sudo ufw --force enable
+sudo ufw reload
+sudo ufw status verbose
+
+echo "--------------------------------------------------------"
+echo "SETUP ALMOST COMPLETE!"
+echo "--------------------------------------------------------"
+echo "To finish up, you need to do two manual steps:"
+echo "1. Create your Samba password by running: sudo smbpasswd -a $(whoami)"
+echo "2. Reboot your PC so the user group changes take effect."
