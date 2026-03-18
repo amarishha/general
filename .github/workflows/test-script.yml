@@ -1,0 +1,18 @@
+name: Test Setup Script
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test-on-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run setup script
+        # This simulates a 'yes' to any prompts and runs your script
+        run: |
+          chmod +x setup.sh
+          yes | sudo ./setup.sh
